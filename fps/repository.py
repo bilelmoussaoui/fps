@@ -25,7 +25,7 @@ class App:
         query = "INSERT INTO apps (app_id, archived, updated_at, pending_invitations, runtime, base, status_message) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
         _id = Database.get_default().insert(
-            query, (app_id, archived, updated_at, pending_invitations, runtime, base, status_message ))
+            query, (app_id, archived, updated_at, pending_invitations, runtime, base, status_message))
         return App(_id, app_id, archived, updated_at, pending_invitations, runtime, base, status_message)
 
     @staticmethod
@@ -34,7 +34,7 @@ class App:
         rows = Database.get_default().fetch(query, (app_id, ))
         if rows:
             row = rows[0]
-            return App(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
+            return App(*row)
 
     def __init__(self, _id, app_id, archived, updated_at, pending_invitations, runtime, base, status_message):
         self.id = _id
@@ -71,12 +71,11 @@ class Repository:
 
             logger.debug(f"Updating {app_id}")
 
-
         return Repository(app)
 
     @staticmethod
     def from_row(row):
-        app = App(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7])
+        app = App(*row)
         return Repository(app)
 
     def __init__(self, app: App):
@@ -84,6 +83,10 @@ class Repository:
         repo_cache = CACHE_DIR.joinpath(app.app_id)
 
         self._git_repo = git.Repo(str(repo_cache))
+
+    @property
+    def status_message(self):
+        return self._app.status_message
 
     @property
     def runtime(self):

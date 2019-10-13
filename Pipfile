@@ -22,7 +22,8 @@ pyyaml = "*"
 click = "*"
 fps = {editable = true,path = "."}
 logzero = "*"
-jstyleson = "*"
+json5 = "*"
+multiprocessing_logging = "*"
 
 [requires]
 python_version = "3.7"

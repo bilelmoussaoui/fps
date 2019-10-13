@@ -1,35 +1,169 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
 {% block content %}
 
+<h4>Per runtime usage</h4>
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+
+        <h5>FreeDesktop</h5>
+        <canvas id="FDORuntimesChart" width="300" height="300"></canvas>
+    </div>
+    <div class="col-sm">
+        <h5>GNOME</h5>
+        <canvas id="GNOMERuntimesChart" width="300" height="300"></canvas>
+    </div>
+    <div class="col-sm">
+        <h5>KDE</h5>
+        <canvas id="KDERuntimesChart" width="300" height="300"></canvas>
+    </div>
+  </div>
+</div>
+
+
 <h4>Runtimes usage</h4>
 <canvas id="runtimesChart" width="600" height="400"></canvas>
+
+<h4>Bases usage</h4>
+<canvas id="basesChart" width="600" height="400"></canvas>
+
 
 {% endblock %}
 {% block footer %}
 <script src="/js/chart.min.js"></script>
 <script>
-    // define the chart data
-    var runtimesChartData = {
-        labels : [{% for runtime, count in runtimes_usage %}
-            "{{ runtime }}",
+
+    var chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+    var color = Chart.helpers.color;
+
+    var runtimesChart = new Chart(document.getElementById("runtimesChart").getContext("2d"), {
+        type: 'bar',
+        data: {
+            labels : [{% for runtime, count in runtimes_usage %}
+                "{{ runtime }}",
+                {% endfor %}],
+            datasets: [{
+                borderWidth: 1,
+                backgroundColor: color(chartColors.red).alpha(0.5).rgbString(),
+                borderColor: chartColors.red,
+                data: [{% for runtime, count in runtimes_usage %}
+                        {{ count }},
+                    {% endfor %}],
+                label: "Repositories"
+            }]
+        },
+        options: {
+            responsive: true,
+            legend: {
+                position: 'top',
+            }
+        }
+    });
+
+    var basesChart = new Chart(document.getElementById("basesChart").getContext("2d"), {
+        type: 'bar',
+        data: {
+        labels : [{% for base, count in bases_usage %}
+            "{{ base }}",
             {% endfor %}],
         datasets: [{
             borderWidth: 1,
-            data: [{% for runtime, count in runtimes_usage %}
+            backgroundColor: color(chartColors.yellow).alpha(0.5).rgbString(),
+            borderColor: chartColors.yellow,
+            data: [{% for base, count in bases_usag %}
                     {{ count }},
                 {% endfor %}],
             label: "Repositories"
         }]
-    };
-
-    var ctx = document.getElementById("runtimesChart").getContext("2d");
-
-    // create the chart using the chart canvas
-    var runtimesChart = new Chart(ctx, {
-        type: 'horizontalBar',
-        data: runtimesChartData
-
+        },
+        options: {
+            responsive: true,
+        }
     });
+
+    new Chart(document.getElementById("GNOMERuntimesChart").getContext("2d"), {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: [{% for runtime, count in gnome_usage %}
+                        "{{ count }}",
+                        {% endfor %}],
+                backgroundColor: [
+                    chartColors.red,
+                    chartColors.purple,
+                    chartColors.blue,
+                    chartColors.orange,
+                    chartColors.green,
+                    chartColors.yellow,
+                    chartColors.grey,
+                ],
+            }],
+            labels: [{% for runtime, count in gnome_usage %}
+                        "{{ runtime }}",
+                        {% endfor %}],
+        },
+        options: {
+            responsive: true
+        }
+    })
+    new Chart(document.getElementById("FDORuntimesChart").getContext("2d"), {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: [{% for runtime, count in fdo_usage %}
+                        "{{ count }}",
+                        {% endfor %}],
+                backgroundColor: [
+                    chartColors.red,
+                    chartColors.purple,
+                    chartColors.blue,
+                    chartColors.orange,
+                    chartColors.green,
+                    chartColors.yellow,
+                    chartColors.grey,
+                ],
+            }],
+            labels: [{% for runtime, count in fdo_usage %}
+                        "{{ runtime }}",
+                        {% endfor %}],
+        },
+        options: {
+            responsive: true
+        }
+    })
+    new Chart(document.getElementById("KDERuntimesChart").getContext("2d"), {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: [{% for runtime, count in kde_usage %}
+                        "{{ count }}",
+                        {% endfor %}],
+                backgroundColor: [
+                    chartColors.red,
+                    chartColors.purple,
+                    chartColors.blue,
+                    chartColors.orange,
+                    chartColors.green,
+                    chartColors.yellow,
+                    chartColors.grey,
+                ],
+            }],
+            labels: [{% for runtime, count in kde_usage %}
+                        "{{ runtime }}",
+                        {% endfor %}],
+        },
+        options: {
+            responsive: true
+        }
+    })
 </script>
 {% endblock %}

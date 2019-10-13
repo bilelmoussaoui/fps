@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
+<h4>Broken repositories</h4>
 
 <table class="table table-striped">
     <thead>
@@ -24,7 +24,7 @@
                 <a href="https://github.com/flathub/{{repository.name}}/">{{repository.name }}</a>
             </td>
             <td>{{ repository.updated_at }}</td>
-            <td></td>
+            <td>{{ repository.status_message }}</td>
             <td>{{ repository.runtime }}</td>
             <td>{{ repository.pending_invitations }} </td>
         </tr>

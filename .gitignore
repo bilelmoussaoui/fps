@@ -3,6 +3,7 @@
 fps/.env
 *.db
 *.db.*
+fps.egg-info/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

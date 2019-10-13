@@ -1,11 +1,32 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
 {% block content %}
 
+<div class="container">
+  <div class="row">
+    <div class="col">
 
-<nav class="nav flex-column">
-    {% for runtime in runtimes %}
-        <a class="nav-link" href="/runtime/{{runtime}}">{{runtime}}</a>
-    {% endfor %}
-</nav>
+        <h5>Runtimes</h5>
+        <ul class="list-group">
+            {% for runtime in runtimes %}
+                <li class="list-group-item">
+                    <a class="nav-link" href="/runtime/{{runtime}}">{{runtime}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="col">
+        <h5>Bases</h5>
+        <ul class="list-group">
+            {% for base in bases %}
+                {% if base != 'undefined' %}
+                <li class="list-group-item">
+                    <a class="nav-link" href="/base/{{base}}">{{base}}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+  </div>
+</div>
 {% endblock %}

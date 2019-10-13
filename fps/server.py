@@ -38,15 +38,19 @@ def main():
         'end_pagination': end_pagination
     })
 
+
 @flask_app.route('/runtimes')
 def runtimes():
     app = Application(get_db())
 
     runtimes = app.get_runtimes()
+    bases = app.get_bases()
 
     return render_template('runtimes.html', ** {
-        'runtimes': runtimes
+        'runtimes': runtimes,
+        'bases': bases
     })
+
 
 @flask_app.route('/runtime/<runtime_id>')
 def runtime(runtime_id):
@@ -58,15 +62,44 @@ def runtime(runtime_id):
         'repositories': repos,
     })
 
+
+@flask_app.route('/base/<base_id>')
+def base(base_id):
+    app = Application(get_db())
+
+    repos = app.load_repos_per_base(base_id)
+
+    return render_template('base.html', **{
+        'repositories': repos,
+    })
+
+
 @flask_app.route('/stats')
 def stats():
 
     app = Application(get_db())
 
-    runtimes_usage = app.runtimes_stats()
+    runtimes_usage, gnome_usage, kde_usage, fdo_usage = app.get_runtimes_usage()
+    bases_usage = app.get_bases_usage()
 
     return render_template('stats.html', **{
         'runtimes_usage': runtimes_usage,
+        'fdo_usage': fdo_usage.items(),
+        'gnome_usage': gnome_usage.items(),
+        'kde_usage': kde_usage.items(),
+        'bases_usage': bases_usage,
+    })
+
+
+@flask_app.route('/broken')
+def broken_repos():
+
+    app = Application(get_db())
+
+    broken_repos = app.broken_repos()
+
+    return render_template('repos.broken.html', **{
+        'repositories': broken_repos,
     })
 
 

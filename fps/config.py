@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 
 from dotenv import load_dotenv
+import multiprocessing_logging
 
 import logzero
 
@@ -21,7 +22,7 @@ IGNORE_REPOS = ["ansible-playbook", "buildbot", "flathub",
                 "buildbot", "buildbot-config", "buildbot-flathub",
                 "shared-modules", "linux-store-frontend", "flathub.org",
                 "linux-store-backend", "flathub-stats",
-                "rpm-nginx", ]
+                "rpm-nginx", "electron-sample-app"]
 
 
 if not GITHUB_TOKEN:

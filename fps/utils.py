@@ -1,4 +1,4 @@
-import jstyleson
+import json
 from pathlib import Path
 
 import yaml
@@ -24,7 +24,7 @@ def parse_manifest(manifest_path: Path):
     with open(str(manifest_path), 'r') as stream:
         if manifest_path.suffix == '.json':
             try:
-                manifest = jstyleson.load(stream)
+                manifest = json.load(stream)
             except Exception as exc:
                 raise InvalidManifest(exc)
         else:
@@ -33,3 +33,23 @@ def parse_manifest(manifest_path: Path):
             except yaml.YAMLError as exc:
                 raise InvalidManifest(exc)
     return manifest
+
+
+def update_repo(gh_repo):
+    from fps.repository import Repository
+
+    pending_invitations = gh_repo.get_pending_invitations().totalCount
+    updated_at = gh_repo.updated_at
+    app_id = gh_repo.name
+    archived = gh_repo.archived
+    clone_url = gh_repo.clone_url
+
+    Repository.new(
+        ** {
+            'pending_invitations': pending_invitations,
+            'app_id': app_id,
+            'updated_at': updated_at,
+            'archived': archived,
+            'clone_url': clone_url
+        }
+    )

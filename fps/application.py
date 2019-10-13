@@ -1,8 +1,10 @@
+import multiprocessing
 import os
 
 from fps.config import CACHE_DIR, PER_PAGE, logger
 from fps.flathub import Flathub
 from fps.repository import Repository
+from fps.utils import update_repo
 
 
 class Application:
@@ -36,9 +38,21 @@ class Application:
 
         return [Repository.from_row(row) for row in rows]
 
+    def load_repos_per_base(self, base_id):
+        if base_id != "undefined":
+            query = f"SELECT * from apps WHERE base=?"
+
+            rows = self._db.fetch(query, (base_id, ))
+
+            return [Repository.from_row(row) for row in rows]
+
     def refresh_cache(self):
         logger.info("Refreshing repositories cache...")
-        self._flathub.refresh_cache()
+        _repos = self._flathub.refresh_cache()
+
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        pool.map(update_repo, _repos)
+        pool.close()
 
     def get_runtimes(self):
         query = "SELECT DISTINCT runtime FROM apps ORDER BY runtime ASC"
@@ -46,11 +60,53 @@ class Application:
         runtimes = self._db.fetch(query)
         return [runtime[0] if runtime[0] else "undefined" for runtime in runtimes]
 
-    def runtimes_stats(self):
+    def get_bases(self):
+        query = "SELECT DISTINCT base FROM apps ORDER BY base ASC"
+
+        bases = self._db.fetch(query)
+        return [base[0] if base[0] else "undefined" for base in bases]
+
+    def get_runtimes_usage(self):
         query = "SELECT DISTINCT runtime, COUNT(runtime) FROM apps GROUP BY runtime ORDER BY runtime ASC"
 
         runtimes = self._db.fetch(query)
-        return [(runtime[0], runtime[1]) if runtime[0] else ("undefined", runtime[1]) for runtime in runtimes]
+        runtimes_usages = [(runtime[0], runtime[1])
+                           for runtime in runtimes if runtime[0]]
+
+        gnome_runtimes = ["org.gnome.Platform", "org.gnome.Sdk"]
+        kde_runtimes = ["org.kde.Platform", "org.kde.Sdk"]
+        fdo_runtimes = ["org.freedesktop.Platform", "org.freedesktop.Sdk"]
+
+        gnome_runtimes_usages = {}
+        kde_runtimes_usages = {}
+        fdo_runtimes_usages = {}
+
+        for runtime, usage_count in runtimes_usages:
+            runtime_name, runtime_version = runtime.split("::")
+            if runtime_name in gnome_runtimes:
+                gnome_runtimes_usages[runtime_version] = gnome_runtimes_usages.get(
+                    runtime_version, 0) + usage_count
+            elif runtime_name in kde_runtimes:
+                kde_runtimes_usages[runtime_version] = kde_runtimes_usages.get(
+                    runtime_version, 0) + usage_count
+            elif runtime_name in fdo_runtimes:
+                fdo_runtimes_usages[runtime_version] = fdo_runtimes_usages.get(
+                    runtime_version, 0) + usage_count
+
+        return (runtimes_usages, gnome_runtimes_usages, kde_runtimes_usages, fdo_runtimes_usages)
+
+    def get_bases_usage(self):
+        query = "SELECT DISTINCT base, COUNT(base) FROM apps GROUP BY base ORDER BY base ASC"
+
+        bases = self._db.fetch(query)
+        return [(base[0], base[1]) for base in bases if base[0]]
+
+    def broken_repos(self):
+        query = f"SELECT * from apps WHERE status_message IS NOT NULL"
+
+        rows = self._db.fetch(query)
+
+        return [Repository.from_row(row) for row in rows]
 
     def run_server(self):
         import fps.server
