@@ -79,7 +79,7 @@
             borderWidth: 1,
             backgroundColor: color(chartColors.yellow).alpha(0.5).rgbString(),
             borderColor: chartColors.yellow,
-            data: [{% for base, count in bases_usag %}
+            data: [{% for base, count in bases_usage %}
                     {{ count }},
                 {% endfor %}],
             label: "Repositories"

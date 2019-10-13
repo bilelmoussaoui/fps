@@ -1,14 +1,31 @@
+#
+# Copyright (c) 2019 Bilal Elmoussaoui.
+#
+# This file is part of Flathub Package Status
+# (see https://github.com/bilelmoussaoui/fps).
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
 import datetime
-import os
-from pathlib import Path
 
 import git
 import jinja2
 import requests
 
-from fps.config import logger, CACHE_DIR
+from fps.config import CACHE_DIR, logger
 from fps.database import Database
-from fps.utils import InvalidManifest, find_manifest, parse_manifest
+from fps.utils import InvalidManifest, find_manifest
 
 
 class App:
