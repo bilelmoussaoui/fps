@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import json
+from jsoncomment import JsonComment
 from pathlib import Path
 
 import yaml
@@ -42,6 +42,7 @@ def find_manifest(app_id, repo_dir) -> Path:
 def parse_manifest(manifest_path: Path):
     with open(str(manifest_path), 'r') as stream:
         if manifest_path.suffix == '.json':
+            json = JsonComment()
             try:
                 manifest = json.load(stream)
             except Exception as exc:
