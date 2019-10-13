@@ -1,3 +1,0 @@
-[console_scripts]
-fps = fps.cli:run
-
