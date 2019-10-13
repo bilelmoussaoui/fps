@@ -1,0 +1,35 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+flake8 = "*"
+setuptools = "*"
+autopep8 = "*"
+pytest-cov = "*"
+
+[packages]
+flask = "*"
+pygithub = "*"
+requests = "*"
+beautifulsoup4 = "*"
+python-dotenv = "*"
+gitpython = "*"
+yoyo-migrations = "*"
+pyyaml = "*"
+click = "*"
+fps = {editable = true,path = "."}
+logzero = "*"
+jstyleson = "*"
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+tests = "pytest -vv --cov=fps . --cov-report xml --cov-report term-missing"
+install = "pipenv install -e ./"
+install-dev = "pipenv install --ignore-pipfile --dev"
+lint = "autopep8 --in-place --recursive ."
+flake8 = "flake8 --show-source fps/ tests/ --exclude=__init__.py --max-line-length=120"

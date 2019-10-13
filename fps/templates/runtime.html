@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>App-id</th>
+            <th scope="col">Latest update at</th>
+            <th scope="col">Latest build</th>
+            <th scope="col">Current runtime</th>
+            <th scope="col">Pending invitations</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for repository in repositories %}
+        {% if repository.is_valid %}
+        <tr>
+        {% else %}
+        <tr class="disabled">
+        {% endif %}
+            <td>
+                <a href="https://github.com/flathub/{{repository.name}}/">{{repository.name }}</a>
+            </td>
+            <td>{{ repository.updated_at }}</td>
+            <td></td>
+            <td>{{ repository.runtime }}</td>
+            <td>{{ repository.pending_invitations }} </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

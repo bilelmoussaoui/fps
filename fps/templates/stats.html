@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h4>Runtimes usage</h4>
+<canvas id="runtimesChart" width="600" height="400"></canvas>
+
+{% endblock %}
+{% block footer %}
+<script src="/js/chart.min.js"></script>
+<script>
+    // define the chart data
+    var runtimesChartData = {
+        labels : [{% for runtime, count in runtimes_usage %}
+            "{{ runtime }}",
+            {% endfor %}],
+        datasets: [{
+            borderWidth: 1,
+            data: [{% for runtime, count in runtimes_usage %}
+                    {{ count }},
+                {% endfor %}],
+            label: "Repositories"
+        }]
+    };
+
+    var ctx = document.getElementById("runtimesChart").getContext("2d");
+
+    // create the chart using the chart canvas
+    var runtimesChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: runtimesChartData
+
+    });
+</script>
+{% endblock %}
