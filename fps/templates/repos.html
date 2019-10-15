@@ -45,16 +45,18 @@
     </thead>
     <tbody>
         {% for repository in repositories %}
-        {% if repository.is_valid %}
         <tr>
-        {% else %}
-        <tr class="disabled">
-        {% endif %}
             <td>
-                <a href="https://github.com/flathub/{{repository.name}}/">{{repository.name }}</a>
+                <a href="https://github.com/flathub/{{repository.name}}/">
+                    {% if repository.is_eol %}
+                        <del>{{ repository.name }}</del>
+                    {% else %}
+                        {{repository.name }}
+                    {% endif %}
+                </a>
             </td>
             <td>{{ repository.updated_at }}</td>
-            <td>{{ repository.status_message }}</td>
+            <td>{{ repository.status_message|safe }}</td>
             <td>{{ repository.runtime }}</td>
             <td>{{ repository.pending_invitations }} </td>
         </tr>

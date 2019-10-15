@@ -17,10 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-from jsoncomment import JsonComment
+import datetime
 from pathlib import Path
 
+import jinja2
+import requests
 import yaml
+from jsoncomment import JsonComment
 
 
 class InvalidManifest(Exception):
@@ -70,6 +73,38 @@ def update_repo(gh_repo):
             'app_id': app_id,
             'updated_at': updated_at,
             'archived': archived,
-            'clone_url': clone_url
+            'clone_url': clone_url,
+            'refresh-cache': True
         }
     )
+
+
+def get_latest_build_status(app_id):
+    builds_uri = f"https://flathub.org/builds/api/v2/builds?flathub_name={app_id}"
+
+    response = requests.get(builds_uri)
+    status_message = None
+    if response.status_code == 200:
+        builds = response.json()["builds"]
+        if builds:
+            builds = list(filter(lambda build: build['complete'], builds))
+            builds.sort(key=lambda build: build["complete_at"], reverse=True)
+            latest_build = builds[0]
+            started_at = datetime.datetime.fromtimestamp(
+                latest_build["started_at"])
+            state_str = latest_build["state_string"]
+
+            has_errors = state_str != 'build successful'
+            buildid = latest_build['number']
+            builderid = latest_build['builderid']
+
+            status_message = f"<a href='https://flathub.org/builds/#/builders/{builderid}/builds/{buildid}'>Started at: {started_at}<br/>{state_str}</a>"
+
+    if not status_message:
+        status_message = "Never built"
+        has_errors = True
+
+    if has_errors:
+        return jinja2.Markup(f'<div class="text-danger">{status_message}</div>')
+    else:
+        return jinja2.Markup(f'<div class="text-success">{status_message}</div>')

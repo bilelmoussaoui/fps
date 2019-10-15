@@ -17,15 +17,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import datetime
-
 import git
 import jinja2
-import requests
 
 from fps.config import CACHE_DIR, logger
 from fps.database import Database
-from fps.utils import InvalidManifest, find_manifest
+from fps.utils import InvalidManifest, find_manifest, get_latest_build_status
 
 
 class App:
@@ -74,6 +71,9 @@ class Repository:
         if not repo_cache.exists():
             logger.debug(f"Cloning {app_id}")
             git.Git(CACHE_DIR).clone(kwargs.get("clone_url"), depth=1)
+        elif kwargs.get("refresh-cache"):
+            logger.debug(f"Pulling latest changes {app_id}")
+            git.Repo(str(repo_cache)).remote('origin').pull()
 
         app = App.from_app_id(app_id)
         if not app:
@@ -83,7 +83,12 @@ class Repository:
                 if manifest.get('base'):
                     kwargs["base"] = f"{manifest.get('base')}::{manifest.get('base-version')}"
             except InvalidManifest as e:
-                kwargs["status_message"] = str(e)
+                kwargs["status_message"] = jinja2.Markup(
+                    f'<div class="text-danger">{e}</div>')
+
+            if not kwargs.get("status_message"):
+                kwargs["status_message"] = get_latest_build_status(app_id)
+
             app = App.new(**kwargs)
 
             logger.debug(f"Updating {app_id}")
@@ -97,9 +102,13 @@ class Repository:
 
     def __init__(self, app: App):
         self._app = app
-        repo_cache = CACHE_DIR.joinpath(app.app_id)
+        self._repo_dir = CACHE_DIR.joinpath(app.app_id)
 
-        self._git_repo = git.Repo(str(repo_cache))
+        self._git_repo = git.Repo(str(self._repo_dir))
+
+    @property
+    def is_eol(self):
+        return self._app.archived
 
     @property
     def status_message(self):
@@ -118,31 +127,6 @@ class Repository:
     def updated_at(self):
         """Returns a datetime.datetime."""
         return self._app.updated_at
-
-    @property
-    def latest_build(self):
-        builds_uri = f"https://flathub.org/builds/api/v2/builds?flathub_name={self.name}"
-
-        response = requests.get(builds_uri)
-        builds = response.json()["builds"]
-        if builds:
-            builds.sort(key=lambda build: build["started_at"], reverse=True)
-            latest_build = builds[0]
-            started_at = datetime.datetime.fromtimestamp(
-                latest_build["started_at"])
-            state_str = latest_build["state_string"]
-
-            has_errors = state_str != 'build successful'
-
-            response = f"Started at: {started_at}<br/>{state_str}"
-
-        else:
-            response = "Never built"
-            has_errors = True
-        if has_errors:
-            return jinja2.Markup(f'<div class="text-danger">{response}</div>')
-        else:
-            return jinja2.Markup(f'<div class="text-success">{response}</div>')
 
     @property
     def pending_invitations(self):

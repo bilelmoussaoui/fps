@@ -110,23 +110,24 @@ def stats():
     })
 
 
-@flask_app.route('/broken')
-def broken_repos():
-
-    app = Application(get_db())
-
-    broken_repos = app.broken_repos()
-
-    return render_template('repos.broken.html', **{
-        'repositories': broken_repos,
-    })
-
-
 @flask_app.route('/refresh-cache')
 def refresh_cache():
     app = Application(get_db())
 
     app.refresh_cache()
+
+
+@flask_app.route('/search')
+def search():
+    query = request.args.get("q")
+
+    app = Application(get_db())
+    results = app.search(query)
+
+    return render_template('search.html', ** {
+        'results': results,
+        'query': query
+    })
 
 
 flask_app.run()

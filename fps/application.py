@@ -20,8 +20,9 @@
 import multiprocessing
 import os
 
-from fps.config import CACHE_DIR, PER_PAGE, logger
-from fps.flathub import Flathub
+import github
+
+from fps.config import CACHE_DIR, GITHUB_TOKEN, IGNORE_REPOS, PER_PAGE, logger
 from fps.repository import Repository
 from fps.utils import update_repo
 
@@ -30,7 +31,6 @@ class Application:
 
     def __init__(self, db):
         self._db = db
-        self._flathub = Flathub()
 
     @property
     def total_repos(self) -> int:
@@ -67,11 +67,28 @@ class Application:
 
     def refresh_cache(self):
         logger.info("Refreshing repositories cache...")
-        _repos = self._flathub.refresh_cache()
+        gh = github.Github(GITHUB_TOKEN)
+        org = gh.get_organization("flathub")
+        repositories = org.get_repos('public', 'full_name', 'asc')
+        _repos = []
+
+        for gh_repo in repositories:
+            if gh_repo.name not in IGNORE_REPOS:
+                _repos.append(gh_repo)
+                # Clone the repository
+            else:
+                logger.debug(f"Ignoring {gh_repo.name}")
 
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         pool.map(update_repo, _repos)
         pool.close()
+
+    def search(self, search_term):
+        query = "SELECT * FROM apps WHERE app_id LIKE ? OR runtime LIKE ? OR base LIKE ? ORDER BY app_id ASC"
+
+        rows = self._db.fetch(query, ['%' + search_term + '%'] * 3)
+
+        return [Repository.from_row(row) for row in rows]
 
     def get_runtimes(self):
         query = "SELECT DISTINCT runtime FROM apps ORDER BY runtime ASC"
@@ -86,7 +103,7 @@ class Application:
         return [base[0] if base[0] else "undefined" for base in bases]
 
     def get_runtimes_usage(self):
-        query = "SELECT DISTINCT runtime, COUNT(runtime) FROM apps GROUP BY runtime ORDER BY runtime ASC"
+        query = "SELECT DISTINCT runtime, COUNT(runtime) FROM apps WHERE archived=0 GROUP BY runtime ORDER BY runtime ASC"
 
         runtimes = self._db.fetch(query)
         runtimes_usages = [(runtime[0], runtime[1])
@@ -115,17 +132,10 @@ class Application:
         return (runtimes_usages, gnome_runtimes_usages, kde_runtimes_usages, fdo_runtimes_usages)
 
     def get_bases_usage(self):
-        query = "SELECT DISTINCT base, COUNT(base) FROM apps GROUP BY base ORDER BY base ASC"
+        query = "SELECT DISTINCT base, COUNT(base) FROM apps WHERE archived=0 GROUP BY base ORDER BY base ASC"
 
         bases = self._db.fetch(query)
         return [(base[0], base[1]) for base in bases if base[0]]
-
-    def broken_repos(self):
-        query = f"SELECT * from apps WHERE status_message IS NOT NULL"
-
-        rows = self._db.fetch(query)
-
-        return [Repository.from_row(row) for row in rows]
 
     def run_server(self):
         import fps.server

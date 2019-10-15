@@ -13,7 +13,9 @@
 
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
         <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Flathub Package Status</a>
-        <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+        <form method="GET" action="/search">
+            <input name="q" class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+        </form>
     </nav>
 
     <div class="container-fluid">
@@ -21,12 +23,6 @@
             <nav class="col-md-2 d-none d-md-block bg-light sidebar">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/broken">
-                                <span data-feather="layers"></span>
-                                Broken repositories
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link active" href="/">
                                 <span data-feather="home"></span>

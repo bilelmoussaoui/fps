@@ -18,5 +18,4 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 from .application import Application
-from .flathub import Flathub
 from .repository import Repository
