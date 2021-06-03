@@ -20,7 +20,7 @@ gitpython = "*"
 yoyo-migrations = "*"
 pyyaml = "*"
 click = "*"
-fps = {editable = true,path = "."}
+fps = {editable = true, path = "."}
 logzero = "*"
 jsoncomment = "*"
 

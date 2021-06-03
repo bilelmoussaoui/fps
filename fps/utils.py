@@ -20,6 +20,8 @@
 import datetime
 from pathlib import Path
 
+import git
+from fps.config import CACHE_DIR, logger
 import jinja2
 import requests
 import yaml
@@ -59,26 +61,18 @@ def parse_manifest(manifest_path: Path):
 
 
 def update_repo(gh_repo):
-    from fps.repository import Repository
-
-    pending_invitations = gh_repo.get_pending_invitations().totalCount
-    updated_at = gh_repo.updated_at
     app_id = gh_repo.name
-    archived = gh_repo.archived
-    clone_url = gh_repo.clone_url
-
-    Repository.new(
-        ** {
-            'pending_invitations': pending_invitations,
-            'app_id': app_id,
-            'updated_at': updated_at,
-            'archived': archived,
-            'clone_url': clone_url,
-            'refresh-cache': True
-        }
-    )
-
-
+    refresh_cache = True # TODO: compute this with the latest updated time
+    repo_cache = CACHE_DIR.joinpath(app_id)
+    try:
+        if not repo_cache.exists():
+            logger.debug(f"Cloning {app_id}")
+            git.Git(CACHE_DIR).clone(gh_repo.clone_url, depth=1)
+        elif refresh_cache:
+            logger.debug(f"Pulling latest changes {app_id}")
+            git.Repo(str(repo_cache)).remote('origin').pull()
+    except ValueError as e:
+        logger.error(f"Failed to update cached repository {app_id}: {e}")
 def get_latest_build_status(app_id):
     builds_uri = f"https://flathub.org/builds/api/v2/builds?flathub_name={app_id}"
 

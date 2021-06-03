@@ -65,15 +65,8 @@ class Repository:
 
     @staticmethod
     def new(**kwargs):
-        app_id = kwargs.get("app_id")
-        repo_cache = CACHE_DIR.joinpath(app_id)
-
-        if not repo_cache.exists():
-            logger.debug(f"Cloning {app_id}")
-            git.Git(CACHE_DIR).clone(kwargs.get("clone_url"), depth=1)
-        elif kwargs.get("refresh-cache"):
-            logger.debug(f"Pulling latest changes {app_id}")
-            git.Repo(str(repo_cache)).remote('origin').pull()
+        app_id = kwargs["app_id"]
+        repo_cache = kwargs["repo_cache"]
 
         app = App.from_app_id(app_id)
         if not app:

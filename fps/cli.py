@@ -37,8 +37,9 @@ def run(ctx):
 @click.pass_context
 def refresh(ctx):
     app = ctx.obj['app']
+    # Reclones the repsitories if needed
     app.refresh_cache()
-
+    app.update_database()
 
 @run.command(help="Runs the web server")
 @click.pass_context

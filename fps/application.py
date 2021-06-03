@@ -30,6 +30,7 @@ from fps.utils import update_repo
 class Application:
 
     def __init__(self, db):
+        self.repositories = []
         self._db = db
 
     @property
@@ -78,10 +79,28 @@ class Application:
                 # Clone the repository
             else:
                 logger.debug(f"Ignoring {gh_repo.name}")
-
+        self.repositories = _repos # Store the synced repositories
         pool = multiprocessing.Pool(multiprocessing.cpu_count())
         pool.map(update_repo, _repos)
         pool.close()
+
+    def update_database(self):
+        for gh_repo in self.repositories:
+            pending_invitations = gh_repo.get_pending_invitations().totalCount
+            updated_at = gh_repo.updated_at
+            archived = gh_repo.archived
+            app_id = gh_repo.name
+            repo_cache = CACHE_DIR.joinpath(app_id)
+            Repository.new(
+                ** {
+                    'pending_invitations': pending_invitations,
+                    'app_id': app_id,
+                    'updated_at': updated_at,
+                    'archived': archived,
+                    'repo_cache': repo_cache,
+                }
+            )
+
 
     def search(self, search_term):
         query = "SELECT * FROM apps WHERE app_id LIKE ? OR runtime LIKE ? OR base LIKE ? ORDER BY app_id ASC"

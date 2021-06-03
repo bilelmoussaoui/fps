@@ -35,11 +35,14 @@ MIGRATIONS_DIR = './fps/migrations'
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'dev')
 
 
-IGNORE_REPOS = ["ansible-playbook", "buildbot", "flathub",
-                "buildbot", "buildbot-config", "buildbot-flathub",
-                "shared-modules", "linux-store-frontend", "flathub.org",
-                "linux-store-backend", "flathub-stats",
-                "rpm-nginx", "electron-sample-app"]
+IGNORE_REPOS = [
+    "ansible-playbook", "ansible-role-zerotier",
+    "flatpak-external-data-checker", "buildbot", "flathub",
+    "buildbot", "buildbot-config", "buildbot-flathub",
+    "shared-modules", "linux-store-frontend", "flathub.org",
+    "linux-store-backend", "flathub-stats",
+    "rpm-nginx", "blog", "electron-sample-app", "backend", "frontend", "actions"
+]
 
 
 if not GITHUB_TOKEN:
